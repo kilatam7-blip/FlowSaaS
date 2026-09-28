@@ -1,42 +1,71 @@
 # FlowSaaS
 
-Frontend React + Vite yang memakai Appwrite untuk autentikasi email/password dan menyimpan permintaan demo serta kontak.
+Landing page untuk FlowSaaS, sebuah konsep platform produktivitas tim all-in-one. Website ini memperkenalkan fitur, paket harga, dan alur pendaftaran melalui pengalaman yang responsif dan interaktif.
 
-Appwrite menyediakan backend melalui SDK resminya. Aplikasi tidak memiliki server Node.js sendiri dan terhubung langsung ke Appwrite dari browser. Database yang dipakai adalah **TablesDB**; formulir menambahkan row ke table `leads`.
+## Fitur Website
 
-## Yang Terhubung
+- Hero section dengan ajakan untuk memulai trial atau meminta demo.
+- Showcase untuk workflow automation, kolaborasi tim, analytics, task management, cloud storage, dan keamanan.
+- Preview dashboard produk, testimoni, paket harga, FAQ, dan resource.
+- Dialog untuk sign up, sign in, request demo, dan menghubungi sales.
+- Integrasi Appwrite untuk autentikasi email/password dan penyimpanan form demo/kontak.
 
-- **Create account** membuat pengguna Appwrite dengan nama, email, dan password.
-- **Sign in** membuat sesi Appwrite email/password.
-- **Request a demo** menambahkan row bertipe `demo` ke table `leads`.
-- **Contact sales** menambahkan row bertipe `contact` ke table `leads`.
+> **Catatan:** Preview dashboard dan deskripsi fitur produk merupakan showcase website. Integrasi backend yang aktif pada proyek ini adalah autentikasi akun serta penyimpanan permintaan demo dan kontak.
 
-Password hanya dikirim ke Appwrite Account dan tidak disimpan di database lead.
+## Teknologi
 
-## Prasyarat
+- React 19 dan TypeScript
+- Vite 7
+- Tailwind CSS 4
+- Appwrite Web SDK dengan Account dan TablesDB
+- Lucide React
 
-- Node.js versi 20.19+ atau 22.12+.
-- npm.
-- Project Appwrite Cloud atau instance Appwrite yang dapat diakses dari browser.
+## Menjalankan Secara Lokal
 
-## 1. Siapkan Project Appwrite
+### Prasyarat
 
-Gunakan project Appwrite yang sudah ada, atau buat project baru di [Appwrite Console](https://cloud.appwrite.io/).
+- Node.js 20.19+ atau 22.12+
+- npm
+- Project Appwrite Cloud atau instance Appwrite yang dapat diakses dari browser
 
-1. Buka **Apps** → **Add app** → **Web**. Beri nama, misalnya `FlowSaaS`, lalu masukkan hostname `localhost` tanpa protokol atau nomor port. Tambahkan hostname produksi saat deploy.
-2. Buka **Auth** dan pastikan metode **Email/Password** aktif.
+### Instalasi
 
-Hostname harus cocok dengan URL browser. `localhost:5173` dan `localhost:5174` sama-sama memakai hostname `localhost`.
+```bash
+npm ci
+```
 
-## 2. Buat Database TablesDB
+Salin template environment:
 
-1. Buka **Databases** → **Create database**.
-2. Pilih **TablesDB**. Jangan pilih DocumentsDB; opsi itu belum tersedia di semua region.
-3. Beri nama database, misalnya `flowsaas`, lalu tekan **Create database**. Jika form meminta ID khusus, gunakan `flowsaas` juga.
-4. Di database tersebut, buat table bernama `leads`. Jika diminta ID table, gunakan `leads`.
-5. Buat columns berikut:
+```powershell
+Copy-Item .env.example .env.local
+```
 
-| Key column | Type di Console | Required |
+Isi `.env.local` dengan endpoint dan ID dari Appwrite Console:
+
+```dotenv
+VITE_APPWRITE_ENDPOINT=https://<REGION>.cloud.appwrite.io/v1
+VITE_APPWRITE_PROJECT_ID=your_project_id
+VITE_APPWRITE_DATABASE_ID=your_database_id
+VITE_APPWRITE_LEADS_TABLE_ID=your_leads_table_id
+```
+
+Jalankan development server:
+
+```bash
+npm run dev
+```
+
+Buka URL lokal yang dicetak Vite. Setelah mengubah `.env.local`, restart server agar konfigurasi baru dimuat.
+
+## Konfigurasi Appwrite
+
+1. Buat atau pilih project Appwrite.
+2. Tambahkan Web platform dan daftarkan hostname `localhost` tanpa protokol maupun nomor port. Tambahkan hostname situs produksi sebelum deploy.
+3. Aktifkan metode autentikasi **Email/Password**.
+4. Buat database bertipe **TablesDB**, lalu buat table bernama/ber-ID `leads`.
+5. Tambahkan kolom berikut sebagai **Text** dan tandai **Required**:
+
+| Key | Type | Required |
 | --- | --- | --- |
 | `leadType` | Text | Ya |
 | `name` | Text | Ya |
@@ -45,70 +74,21 @@ Hostname harus cocok dengan URL browser. `localhost:5173` dan `localhost:5174` s
 | `teamSize` | Text | Ya |
 | `message` | Text | Ya |
 
-Appwrite membuat column sistem `$createdAt` dan mengisinya otomatis; jangan tambahkan column `createdAt` sendiri. Untuk setiap column di atas, biarkan **Array** dan **At-rest encryption** tidak dicentang. Semua columns wajib karena aplikasi selalu mengirim nilainya; field opsional pada formulir dikirim sebagai string kosong. Type **Text** di Console mengizinkan hingga 16.383 karakter.
+Jangan tambahkan `createdAt`; Appwrite mengisi kolom sistem `$createdAt` secara otomatis. Biarkan **Array** dan **At-rest encryption** tidak dicentang. Untuk setiap column di atas, aplikasi mengirim nilai; nilai opsional dikirim sebagai string kosong.
 
-Pada permissions table, beri role **Any** izin **Create** agar pengunjung yang belum login dapat mengirim formulir. Jangan beri role **Any** izin **Read**, **Update**, atau **Delete**. Kiriman form bersifat publik; pertimbangkan CAPTCHA atau proteksi spam sebelum peluncuran publik.
+6. Beri role **Any** izin **Create** pada table supaya form publik bisa mengirim data. Jangan berikan izin **Read**, **Update**, atau **Delete** kepada publik.
+7. Isi nilai endpoint, Project ID, Database ID, dan Table ID pada `.env.local`.
 
-## 3. Isi Konfigurasi Lokal
+Form demo menyimpan row dengan `leadType: demo`; form kontak memakai `leadType: contact`. Keduanya menyertakan nama, email, pesan, serta company/team size bila tersedia.
 
-Salin file contoh:
+## Perintah
 
-```powershell
-Copy-Item .env.example .env.local
+```bash
+npm run dev      # Jalankan development server
+npm run build    # Buat build produksi
+npm run preview  # Preview build produksi
 ```
-
-Isi `.env.local` memakai nilai dari Appwrite Console. Gunakan ID, bukan nama tampilan.
-
-| Variabel | Nilai dari Appwrite |
-| --- | --- |
-| `VITE_APPWRITE_ENDPOINT` | Endpoint API project. Untuk project Singapore di Appwrite Cloud, gunakan endpoint yang ditampilkan Console, misalnya `https://sgp.cloud.appwrite.io/v1`. |
-| `VITE_APPWRITE_PROJECT_ID` | Project ID, terlihat di bagian atas halaman Overview project. |
-| `VITE_APPWRITE_DATABASE_ID` | Database ID yang dibuat pada langkah sebelumnya. |
-| `VITE_APPWRITE_LEADS_TABLE_ID` | Table ID untuk table `leads`. |
-
-Contoh bentuk file:
-
-```dotenv
-VITE_APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1
-VITE_APPWRITE_PROJECT_ID=isi_project_id
-VITE_APPWRITE_DATABASE_ID=isi_database_id
-VITE_APPWRITE_LEADS_TABLE_ID=isi_table_id
-```
-
-Ganti nilai contoh dengan nilai project Anda. Jangan commit `.env.local`; file tersebut sudah diabaikan Git. Nilai `VITE_*` tersedia di browser, jadi hanya masukkan endpoint dan ID publik. **Jangan masukkan API key, password, atau secret.**
-
-## 4. Jalankan Aplikasi
-
-```powershell
-npm ci
-npm run dev
-```
-
-Buka URL yang dicetak Vite di terminal. Jika port 5173 dipakai, Vite memilih port lain. Setelah mengubah `.env.local`, restart server agar nilai baru dimuat.
-
-Untuk build dan menjalankan preview produksi:
-
-```powershell
-npm run build
-npm run preview
-```
-
-## 5. Verifikasi Integrasi
-
-1. Daftarkan akun lewat tombol **Create free account**. Pengguna akan muncul di daftar Users Appwrite.
-2. Coba **Sign in** dengan akun tersebut.
-3. Kirim formulir demo atau kontak.
-4. Buka **Databases** → database Anda → table `leads`. Setiap kiriman harus muncul sebagai row baru. `leadType` bernilai `demo` atau `contact`, dan `$createdAt` berisi waktu pembuatan otomatis dari Appwrite.
-
-## Pemecahan Masalah
-
-- **Appwrite belum dikonfigurasi**: periksa empat nilai di `.env.local`, lalu restart `npm run dev`.
-- **Invalid origin / blocked request**: tambahkan hostname URL aplikasi ke Web app di project Appwrite.
-- **Database atau table tidak ditemukan**: periksa Database ID dan Table ID; keduanya harus berasal dari Project ID yang sama.
-- **Permission denied saat mengirim form**: pastikan table memberi role **Any** izin **Create**.
-- **Column tidak valid atau wajib**: pastikan key, tipe, dan status wajib sama dengan tabel di atas.
-- **Email sudah digunakan**: gunakan akun itu untuk sign in atau daftar dengan email berbeda.
 
 ## Keamanan
 
-Izin **Any → Create** diperlukan agar formulir publik dapat membuat row tanpa login. Jangan beri izin baca atau ubah data lead kepada publik. Untuk validasi server-side, proteksi spam lebih kuat, atau operasi administratif, gunakan Appwrite Functions/backend terpisah dan simpan secret hanya di environment server.
+Semua variabel `VITE_*` dikirim ke browser. Isikan hanya endpoint dan ID konfigurasi publik; jangan pernah memasukkan API key, password, atau secret Appwrite ke frontend. Permission **Any → Create** memang membuka pengiriman row untuk pengunjung publik, tetapi jangan membuka izin baca atau ubah data. Untuk operasi administratif atau validasi server-side, gunakan Appwrite Functions/backend terpisah dengan secret di environment server.
